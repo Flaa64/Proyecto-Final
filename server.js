@@ -1,68 +1,56 @@
 // Cargar las variables de entorno del archivo .env
 require("dotenv").config();
+const { connectToDB, disconnectFromMongoDB } = require("./src/database/mongodb");
 
 // Importar el módulo Express
 const express = require("express");
 const app = express();
 
-// Importar las funciones del gestor de frutas
-const { leerFrutas, guardarFrutas, eliminarFruta, actualizarFruta } = require("./src/frutasManager");
+// Importar las funciones del gestor de mobiliarios
+//const { leermobiliarios, guardarmobiliarios, eliminarFruta, actualizarFruta } = require("./src/mobiliariosManager");
 
 // Configurar el número de puerto para el servidor
 const PORT = process.env.PORT || 3000;
 
-// Crear un arreglo vacío para almacenar los datos de las frutas
-let BD = [];
-
 // Configurar el middleware para analizar el cuerpo de las solicitudes como JSON
 app.use(express.json());
 
-// Middleware para leer los datos de las frutas antes de cada solicitud
+// Middleware para leer los datos de los mobiliarios antes de cada solicitud
 app.use((req, res, next) => {
-  BD = leerFrutas(); // Leer los datos de las frutas desde el archivo
+  res.header("Content-Type", "application/json; charset=utf-8");
   next(); // Pasar al siguiente middleware o ruta
 });
 
-// Ruta principal que devuelve los datos de las frutas
+// Ruta principal que devuelve los datos de los mobiliarios
 app.get("/", (req, res) => {
-   res.send(BD);
+  res.status(200).end("Bienvenido a la API de Mobiliario");
 });
 
-// Ruta que devuelve una fruta segun ID
-app.get("/:id", (req, res) => {
-  let ret = "Id inexistente";
-  if(BD.find( fruta => fruta.id == req.params.id))
-    ret = BD.find( fruta => fruta.id == req.params.id)
-  res.send(ret);
-});
+// Ruta para obtener todas los mobiliarios
+app.get("/mobiliarios", async (req, res) => {
+  try {
+    // Conexión a la base de datos
+    const client = await connectToDB();
+    if (!client) {
+      res.status(500).send("Error al conectarse a MongoDB");
+      return;
+    }
 
-
-// Ruta que actualiza una fruta segun ID
-app.put("/:id", (req, res) => {
-  const fruta = {
-    nombre: req.body.nombre,
-    imagen: req.body.imagen,
-    importe: req.body.importe,
-    stock: req.body.stock
+    // Obtener la colección de mobiliarios y convertir los documentos a un array
+    const db = client.db("MobiliarioDB");
+    const mobiliarios = await db.collection("mobiliarios").find().toArray();
+    res.json(mobiliarios);
+  } catch (error) {
+    // Manejo de errores al obtener los mobiliarios
+    res.status(500).send("Error al obtener los mobiliarios de la base de datos");
+  } finally {
+    // Desconexión de la base de datos
+    await disconnectFromMongoDB();
   }
-  res.send(
-    actualizarFruta(req.params.id, fruta, BD)
-  );
 });
 
-// Ruta para agregar una nueva fruta al arreglo y guardar los cambios
-app.post("/", (req, res) => {
-    const nuevaFruta = req.body;
-    BD.push(nuevaFruta); // Agregar la nueva fruta al arreglo
-    guardarFrutas(BD); // Guardar los cambios en el archivo
-    res.status(201).send("Fruta agregada!"); // Enviar una respuesta exitosa
-});
 
-// Ruta para borrar una fruta segun ID
-app.delete("/:id", (req, res) => {
-  // Guardar los cambios en el archivo
-  res.send(eliminarFruta(req.params.id, BD));
-});
+
 
 // Ruta para manejar las solicitudes a rutas no existentes
 app.get("*", (req, res) => {
