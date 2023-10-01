@@ -1,7 +1,7 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-const sequelize = new Sequelize('trailerflix', process.env.DB_USER, process.env.DB_PWD, {
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PWD, {
   host: process.env.DB_HOST,
   dialect: 'mysql',
 });

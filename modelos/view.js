@@ -37,6 +37,16 @@ const View = sequelize.define('new_view', {
     type: DataTypes.STRING(255),
     allowNull: true,
     defaultValue: ""
+  },
+  generos: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    defaultValue: ""
+  },
+  actores: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    defaultValue: ""
   }
 }, {
   sequelize,
