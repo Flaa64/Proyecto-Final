@@ -9,7 +9,7 @@ VIEW `trailerflix`.`new_view` AS
         `t`.`titulo` AS `titulo`,
         `c`.`categoria` AS `categoria`,
         GROUP_CONCAT(DISTINCT `g`.`genero`
-            SEPARATOR ', ') AS `genero`,
+            SEPARATOR ', ') AS `generos`,
         `t`.`resumen` AS `resumen`,
         `t`.`temporadas` AS `temporadas`,
         GROUP_CONCAT(DISTINCT `a`.`actor`
